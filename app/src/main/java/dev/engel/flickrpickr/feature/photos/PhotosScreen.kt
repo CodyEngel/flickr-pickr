@@ -11,6 +11,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import dev.engel.flickrpickr.R
 import kotlinx.serialization.Serializable
 
@@ -19,7 +20,10 @@ object Photos
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun PhotosScreen(photos: Photos) {
+fun PhotosScreen(
+    photos: Photos,
+    viewModel: PhotosViewModel = hiltViewModel(),
+) {
     Scaffold(
         topBar = {
             TopAppBar(
