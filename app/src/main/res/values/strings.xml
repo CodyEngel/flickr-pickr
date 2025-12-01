@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Flickr Pickr</string>
+
+    <string name="screen_photos_title">Photos</string>
 </resources>
