@@ -43,14 +43,14 @@ class PhotosViewModel @Inject constructor(
 
             try {
                 if (photos.isNotEmpty()) {
-                    _uiState.update { PhotoUiState.Success(photos = photos.toList(), isLoadingMore = true) }
+                    _uiState.update { PhotoUiState.Ready(photos = photos.toList(), isLoadingMore = true) }
                 }
 
                 val response = photosRepository.retrieve(request)
                 nextRequest = response.nextRequest
                 photos += response.photos
 
-                _uiState.update { PhotoUiState.Success(photos = photos.toList()) }
+                _uiState.update { PhotoUiState.Ready(photos = photos.toList()) }
             } finally {
                 loadingMutex.unlock()
             }
@@ -66,7 +66,7 @@ class PhotosViewModel @Inject constructor(
 
 sealed class PhotoUiState {
     object Loading : PhotoUiState()
-    data class Success(
+    data class Ready(
         val photos: List<Photo> = emptyList(),
         val isLoadingMore: Boolean = false,
     ) : PhotoUiState()

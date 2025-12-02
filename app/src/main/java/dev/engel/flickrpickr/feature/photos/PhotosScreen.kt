@@ -2,6 +2,7 @@ package dev.engel.flickrpickr.feature.photos
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -52,30 +53,35 @@ fun PhotosScreen(
             when (val typedState = uiState) {
                 is PhotoUiState.Loading -> Text(text = "Loading...")
                 is PhotoUiState.Error -> Text(text = typedState.message)
-                is PhotoUiState.Success -> {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
-                        state = lazyGridState
-                    ) {
-                        items(
-                            items = typedState.photos,
-                            key = { it.id }
-                        ) { photo ->
-                            Box(
-                                modifier = Modifier
-                                    .aspectRatio(1f)
-                            ) {
-                                AsyncImage(
-                                    model = photo.imageUrl,
-                                    contentDescription = photo.title,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.align(Alignment.Center)
-                                        .aspectRatio(1f)
-                                )
-                            }
-                        }
-                    }
+                is PhotoUiState.Ready -> {
+                    PhotosReady(typedState, lazyGridState)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun PhotosReady(uiState: PhotoUiState.Ready, lazyGridState: LazyGridState) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
+        state = lazyGridState
+    ) {
+        items(
+            items = uiState.photos,
+            key = { it.id }
+        ) { photo ->
+            Box(
+                modifier = Modifier
+                    .aspectRatio(1f)
+            ) {
+                AsyncImage(
+                    model = photo.imageUrl,
+                    contentDescription = photo.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.align(Alignment.Center)
+                        .aspectRatio(1f)
+                )
             }
         }
     }
