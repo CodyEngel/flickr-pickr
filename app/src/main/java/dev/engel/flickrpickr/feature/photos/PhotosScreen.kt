@@ -49,8 +49,8 @@ fun PhotosScreen(
     var searchVisible by rememberSaveable { mutableStateOf(true) }
 
     LaunchedEffect(lazyGridState) {
-        snapshotFlow { lazyGridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 }
-            .collect { viewModel.visibleItemIndexChanged(it) }
+        snapshotFlow { lazyGridState.layoutInfo.visibleItemsInfo }
+            .collect { viewModel.visibleItemsInfoChanged(it) }
     }
 
     LaunchedEffect(viewModel) { viewModel.loadRecent() }

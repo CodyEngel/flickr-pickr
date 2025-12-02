@@ -1,5 +1,6 @@
 package dev.engel.flickrpickr.feature.photos
 
+import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,13 +39,11 @@ class PhotosViewModel @Inject constructor(
         retrievePhotos(PhotosRequest.Search(query = query))
     }
 
-    fun visibleItemIndexChanged(index: Int) {
-        // TODO: this is somewhat clunky since we don't know how many photos are currently visible. This makes infinite
-        // scrolling less precise and clunky since the offset isn't always enough to load more items in time.
-        // Two things:
-        // 1. Let the viewmodel manipulate the List<LazyGridItemInfo> for finer grained information about the current list state.
-        // 2. Include a skeleton loading state for "isLoading" which can show up to let the user know more items are loading.
-        if (index >= photos.size - 10) {
+    fun visibleItemsInfoChanged(visibleItemsInfo: List<LazyGridItemInfo>) {
+        val itemsPerPage = visibleItemsInfo.size
+        val lastVisibleItemIndex = visibleItemsInfo.lastOrNull()?.index?.plus(1) ?: 0
+
+        if (lastVisibleItemIndex >= photos.size - (itemsPerPage * 1.5)) {
             loadNext()
         }
     }
