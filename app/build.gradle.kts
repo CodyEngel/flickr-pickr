@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.cxx.logging.warnln
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -8,6 +9,23 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
 }
+
+fun loadEnv(): Map<String, String> {
+    val envFile = rootProject.file(".env")
+    if (!envFile.exists()) {
+        warnln(".env file not found, skipping env variable loading. This will most likely cause build failures.")
+        return emptyMap()
+    }
+
+    return envFile.readLines()
+        .filter { it.isNotBlank() && !it.startsWith("#") && it.contains("=") }
+        .associate { line ->
+            val (key, value) = line.split("=", limit = 2)
+            key.trim() to value.trim()
+        }
+}
+
+val env = loadEnv()
 
 android {
     namespace = "dev.engel.flickrpickr"
@@ -21,6 +39,8 @@ android {
         versionName = "0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        env.forEach { (key, value) -> buildConfigField("String", key, "\"$value\"") }
     }
 
     buildTypes {
@@ -41,6 +61,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

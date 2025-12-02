@@ -54,3 +54,4 @@ captures/
 /captures
 .externalNativeBuild
 .cxx
+.env
