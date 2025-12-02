@@ -1,6 +1,5 @@
 package dev.engel.flickrpickr.feature.photos
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +18,7 @@ class PhotosViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<PhotoUiState>(PhotoUiState.Loading)
     val uiState: StateFlow<PhotoUiState> = _uiState
 
-    private val photos = mutableListOf<Photo>()
+    private val photos = mutableSetOf<Photo>()
     private var nextRequest: PhotosRequest? = null
     private val loadingMutex = Mutex()
 
@@ -44,14 +43,14 @@ class PhotosViewModel @Inject constructor(
 
             try {
                 if (photos.isNotEmpty()) {
-                    _uiState.update { PhotoUiState.Success(photos = photos, isLoadingMore = true) }
+                    _uiState.update { PhotoUiState.Success(photos = photos.toList(), isLoadingMore = true) }
                 }
 
                 val response = photosRepository.retrieve(request)
                 nextRequest = response.nextRequest
                 photos += response.photos
 
-                _uiState.update { PhotoUiState.Success(photos = photos) }
+                _uiState.update { PhotoUiState.Success(photos = photos.toList()) }
             } finally {
                 loadingMutex.unlock()
             }

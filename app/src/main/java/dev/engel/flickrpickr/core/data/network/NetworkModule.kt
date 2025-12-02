@@ -1,13 +1,21 @@
 package dev.engel.flickrpickr.core.data.network
 
+import android.content.Context
+import coil3.ImageLoader
+import coil3.disk.DiskCache
+import coil3.disk.directory
+import coil3.memory.MemoryCache
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.engel.flickrpickr.core.FlickrApiKey
 import dev.engel.flickrpickr.core.IsDebug
 import kotlinx.serialization.json.Json
+import okhttp3.Cache
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -27,8 +35,21 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(@FlickrApiKey flickrApiKey: String, @IsDebug isDebug: Boolean): OkHttpClient {
+    fun provideCache(@ApplicationContext context: Context): Cache = Cache(context.cacheDir, 10 * 1024 * 1024)
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(cache: Cache, @FlickrApiKey flickrApiKey: String, @IsDebug isDebug: Boolean): OkHttpClient {
         return OkHttpClient.Builder()
+            .cache(cache)
+            .addNetworkInterceptor { chain ->
+                val response = chain.proceed(chain.request())
+
+                response.newBuilder()
+                    .addHeader("Cache-Control", "public, max-age=900")
+                    .removeHeader("Pragma")
+                    .build()
+            }
             .addInterceptor { chain ->
                 val original = chain.request()
                 val url = original.url.newBuilder()
@@ -62,5 +83,25 @@ object NetworkModule {
     @Singleton
     fun provideFlickrApi(retrofit: Retrofit): FlickrApi {
         return retrofit.create(FlickrApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideImageLoader(@ApplicationContext context: Context, okHttpClient: OkHttpClient): ImageLoader {
+        val fetcherFactory = OkHttpNetworkFetcherFactory(okHttpClient)
+        return ImageLoader.Builder(context)
+            .components { add(fetcherFactory) }
+            .memoryCache {
+                MemoryCache.Builder()
+                    .maxSizePercent(context, 0.25)
+                    .build()
+            }
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(context.cacheDir.resolve("image_cache"))
+                    .maxSizeBytes(100 * 1024 * 1024L)
+                    .build()
+            }
+            .build()
     }
 }
