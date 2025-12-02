@@ -24,9 +24,18 @@ class PhotosViewModel @Inject constructor(
 
     fun loadRecent() {
         _uiState.update { PhotoUiState.Loading }
+        nextRequest = null
         photos.clear()
 
         retrievePhotos(PhotosRequest.Recent())
+    }
+
+    fun search(query: String) {
+        _uiState.update { PhotoUiState.Loading }
+        nextRequest = null
+        photos.clear()
+
+        retrievePhotos(PhotosRequest.Search(query = query))
     }
 
     fun visibleItemIndexChanged(index: Int) {

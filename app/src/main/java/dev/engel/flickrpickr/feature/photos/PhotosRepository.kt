@@ -65,8 +65,8 @@ sealed class PhotosRequest {
 
     data class Search(
         val query: String,
-        override val page: Int,
-        override val perPage: Int,
+        override val page: Int = 1,
+        override val perPage: Int = 30,
     ) : PhotosRequest() {
         override fun nextPage(): PhotosRequest {
             return copy(page = page + 1)
