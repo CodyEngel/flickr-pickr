@@ -4,18 +4,73 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.engel.flickrpickr.core.data.network.FlickrApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import javax.inject.Inject
 
 @HiltViewModel
 class PhotosViewModel @Inject constructor(
-    private val flickrApi: FlickrApi
+    private val photosRepository: PhotosRepository,
 ) : ViewModel() {
-    init {
-        viewModelScope.launch {
-            val response =  flickrApi.getRecentPhotos()
-            Log.d("PhotosViewModel", response.toString())
+
+    private val _uiState = MutableStateFlow<PhotoUiState>(PhotoUiState.Loading)
+    val uiState: StateFlow<PhotoUiState> = _uiState
+
+    private val photos = mutableListOf<Photo>()
+    private var nextRequest: PhotosRequest? = null
+    private val loadingMutex = Mutex()
+
+    fun loadRecent() {
+        _uiState.update { PhotoUiState.Loading }
+        photos.clear()
+
+        retrievePhotos(PhotosRequest.Recent())
+    }
+
+    fun visibleItemIndexChanged(index: Int) {
+        if (index >= photos.size - 10) {
+            loadNext()
         }
     }
+
+    private fun retrievePhotos(request: PhotosRequest) {
+        viewModelScope.launch {
+            // Using `tryLock` instead of `withLock` to ensure a request is only made once. Using `withLock` along with
+            // `isLocked` has the potential to create duplicate requests.
+            if (!loadingMutex.tryLock()) return@launch
+
+            try {
+                if (photos.isNotEmpty()) {
+                    _uiState.update { PhotoUiState.Success(photos = photos, isLoadingMore = true) }
+                }
+
+                val response = photosRepository.retrieve(request)
+                nextRequest = response.nextRequest
+                photos += response.photos
+
+                _uiState.update { PhotoUiState.Success(photos = photos) }
+            } finally {
+                loadingMutex.unlock()
+            }
+        }
+    }
+
+    private fun loadNext() {
+        nextRequest?.let { request ->
+            retrievePhotos(request)
+        }
+    }
+}
+
+sealed class PhotoUiState {
+    object Loading : PhotoUiState()
+    data class Success(
+        val photos: List<Photo> = emptyList(),
+        val isLoadingMore: Boolean = false,
+    ) : PhotoUiState()
+
+    data class Error(val message: String) : PhotoUiState()
 }

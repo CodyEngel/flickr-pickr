@@ -11,33 +11,33 @@ interface FlickrApi {
     suspend fun getRecentPhotos(
         @Query("page") page: Int = 1,
         @Query("per_page") perPage: Int = 30
-    ): PhotosResponse
+    ): FlickrPhotosResponse
 
     @GET("rest/?method=flickr.photos.search")
     suspend fun searchPhotos(
         @Query("text") query: String,
         @Query("page") page: Int = 1,
         @Query("per_page") perPage: Int = 30
-    ): PhotosResponse
+    ): FlickrPhotosResponse
 }
 
 @Serializable
-data class PhotosResponse(
-    val photos: PhotosPage,
+data class FlickrPhotosResponse(
+    val photos: FlickrPhotosPage,
     val stat: String
 )
 
 @Serializable
-data class PhotosPage(
+data class FlickrPhotosPage(
     val page: Int,
     val pages: Int,
     @SerialName("perpage") val perPage: Int,
     val total: Int,
-    val photo: List<Photo>
+    val photo: List<FlickrPhoto>
 )
 
 @Serializable
-data class Photo(
+data class FlickrPhoto(
     val id: String,
     val owner: String,
     val secret: String,

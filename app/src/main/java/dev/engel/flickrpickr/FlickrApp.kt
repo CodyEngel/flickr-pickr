@@ -33,7 +33,7 @@ fun FlickrApp() {
                     CompositionLocalProvider(
                         LocalAnimatedVisibilityScope provides this,
                     ) {
-                        PhotosScreen(photos)
+                        PhotosScreen(photos = photos)
                     }
                 }
             }
