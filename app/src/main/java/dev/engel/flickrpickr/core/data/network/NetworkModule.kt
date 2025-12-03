@@ -5,7 +5,6 @@ import coil3.ImageLoader
 import coil3.disk.DiskCache
 import coil3.disk.directory
 import coil3.memory.MemoryCache
-import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -87,10 +86,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideImageLoader(@ApplicationContext context: Context, okHttpClient: OkHttpClient): ImageLoader {
-        val fetcherFactory = OkHttpNetworkFetcherFactory(okHttpClient)
+    fun provideImageLoader(@ApplicationContext context: Context): ImageLoader {
         return ImageLoader.Builder(context)
-            .components { add(fetcherFactory) }
             .memoryCache {
                 MemoryCache.Builder()
                     .maxSizePercent(context, 0.25)

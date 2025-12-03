@@ -1,9 +1,16 @@
 package dev.engel.flickrpickr.feature.photos
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
@@ -14,6 +21,9 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -26,7 +36,9 @@ import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import dev.engel.flickrpickr.R
+import dev.engel.flickrpickr.core.ui.component.SkeletonBox
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -149,10 +161,11 @@ fun PhotosReady(uiState: PhotoUiState.Ready, lazyGridState: LazyGridState, scrol
                 modifier = Modifier
                     .aspectRatio(1f)
             ) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = photo.imageUrl,
                     contentDescription = photo.title,
                     contentScale = ContentScale.Crop,
+                    loading = { SkeletonBox() },
                     modifier = Modifier
                         .align(Alignment.Center)
                         .aspectRatio(1f)
