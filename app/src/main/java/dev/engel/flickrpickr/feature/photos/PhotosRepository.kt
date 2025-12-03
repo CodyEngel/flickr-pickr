@@ -1,24 +1,31 @@
 package dev.engel.flickrpickr.feature.photos
 
 import dagger.Reusable
+import dev.engel.flickrpickr.core.coroutines.IODispatcher
 import dev.engel.flickrpickr.core.data.network.FlickrApi
 import dev.engel.flickrpickr.core.data.network.FlickrPhotosResponse
+import dev.engel.flickrpickr.core.data.network.retryWithExponentialBackoff
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @Reusable
 class PhotosRepository @Inject constructor(
-    private val flickrApi: FlickrApi
+    private val flickrApi: FlickrApi,
+    @param:IODispatcher private val networkDispatcher: CoroutineDispatcher
 ) {
 
-    suspend fun retrieve(request: PhotosRequest): PhotosResponse {
-        return when (request) {
-            is PhotosRequest.Recent -> {
-                flickrApi.getRecentPhotos(page = request.page, perPage = request.perPage)
-            }
-            is PhotosRequest.Search -> {
-                flickrApi.searchPhotos(query = request.query, page = request.page, perPage = request.perPage)
-            }
-        }.let { response -> mapResponse(response, request) }
+    suspend fun retrieve(request: PhotosRequest): PhotosResponse = withContext(networkDispatcher) {
+        retryWithExponentialBackoff {
+            when (request) {
+                is PhotosRequest.Recent -> {
+                    flickrApi.getRecentPhotos(page = request.page, perPage = request.perPage)
+                }
+                is PhotosRequest.Search -> {
+                    flickrApi.searchPhotos(query = request.query, page = request.page, perPage = request.perPage)
+                }
+            }.let { response -> mapResponse(response, request) }
+        }
     }
 
     private fun mapResponse(response: FlickrPhotosResponse, request: PhotosRequest): PhotosResponse {

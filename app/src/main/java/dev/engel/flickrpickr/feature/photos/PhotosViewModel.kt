@@ -1,5 +1,6 @@
 package dev.engel.flickrpickr.feature.photos
 
+import android.util.Log
 import androidx.compose.foundation.lazy.grid.LazyGridItemInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -64,6 +65,13 @@ class PhotosViewModel @Inject constructor(
                 photos += response.photos
 
                 _uiState.update { PhotoUiState.Ready(photos = photos.toList()) }
+            } catch (e: Exception) {
+                Log.e("PhotosViewModel", "Error retrieving photos: ${e.message}", e)
+                if (photos.isEmpty()) {
+                    _uiState.update { PhotoUiState.Error(message = "Error retrieving photos, please try again later.") }
+                } else {
+                    _uiState.update { PhotoUiState.Ready(photos = photos.toList()) }
+                }
             } finally {
                 loadingMutex.unlock()
             }
