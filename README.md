@@ -1,6 +1,19 @@
 # flickr-pickr
 A simple Flickr client for Android.
 
+## Demo
+
+<details open>
+
+<summary>Click to expand</summary>
+
+<video src="docs/media/demo.webm" controls width="600"></video>
+
+![search-results.png](docs/media/search-results.png)
+![photo-details.png](docs/media/photo-details.png)
+![photo-details-exif.png](docs/media/photo-details-exif.png)
+</details>
+
 ## Requirements
 
 - **Android Studio**: Ladybug or newer
@@ -29,6 +42,14 @@ A simple Flickr client for Android.
 4. **Run the app**
 
    Select a device/emulator and click Run.
+
+## Current Trade-Offs
+- This project does not have full unit test coverage, there are some added to demonstrate some of the testing techniques used.
+- There is some additional UI polish that could be added, such as refining the skeleton loading state as well as hiding the search bar when the user has scrolled down.
+- There are no instrumentation tests; given time constraints, it wasn't possible to include them.
+- This project does not automate any lint checks and does not use detekt. Due to the scope of the project, it made little sense to include.
+- The details screen is more of a proof-of-concept than a final product, naming conventions and general ViewModel structure could be improved.
+- This project makes use of built-in caching mechanisms from OkHttp and Coil, as Flickr doesn't formally support caching, the response caching is somewhat clunky, but works!
 
 ## Build Commands
 
