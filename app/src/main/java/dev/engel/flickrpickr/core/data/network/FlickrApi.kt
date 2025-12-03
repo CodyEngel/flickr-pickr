@@ -19,6 +19,18 @@ interface FlickrApi {
         @Query("page") page: Int = 1,
         @Query("per_page") perPage: Int = 30
     ): FlickrPhotosResponse
+
+    @GET("rest/?method=flickr.photos.getExif")
+    suspend fun getPhotoExif(
+        @Query("photo_id") photoId: String,
+        @Query("secret") secret: String,
+    ): FlickrPhotoExifResponse
+
+    @GET("rest/?method=flickr.photos.getInfo")
+    suspend fun getPhotoInfo(
+        @Query("photo_id") photoId: String,
+        @Query("secret") secret: String,
+    ): FlickrPhotoInfoResponse
 }
 
 @Serializable
@@ -44,7 +56,71 @@ data class FlickrPhoto(
     val server: String,
     val farm: Int,
     val title: String
-) {
-    val imageUrl: String
-        get() = "https://live.staticflickr.com/$server/${id}_$secret.jpg"
-}
+)
+
+@Serializable
+data class FlickrPhotoExifResponse(
+    val photo: FlickrPhotoExif
+)
+
+@Serializable
+data class FlickrPhotoExif(
+    val camera: String,
+    val exif: List<FlickrExifData>
+)
+
+@Serializable
+data class FlickrExifData(
+    val tag: String,
+    val label: String,
+    val raw: FlickrContent,
+    val clean: FlickrContent? = null
+)
+
+@Serializable
+data class FlickrPhotoInfoResponse(
+    val photo: FlickrPhotoInfo
+)
+
+@Serializable
+data class FlickrPhotoInfo(
+    val owner: FlickrUser,
+    val title: FlickrContent,
+    val description: FlickrContent,
+    val dates: FlickrPhotoDates,
+    val views: String,
+    val comments: FlickrContent,
+    val tags: FlickrTags
+)
+
+@Serializable
+data class FlickrUser(
+    val username: String,
+    @SerialName("realname") val realName: String,
+    val location: String?,
+)
+
+@Serializable
+data class FlickrPhotoDates(
+    val posted: String,
+    val taken: String
+)
+
+@Serializable
+data class FlickrTags(
+    val tag: List<FlickrPhotoTag>
+)
+
+@Serializable
+data class FlickrPhotoTag(
+    val id: String,
+    val author: String,
+    @SerialName("authorname") val authorName: String,
+    val raw: String,
+    @SerialName("_content") val content: String
+)
+
+@Serializable
+data class FlickrContent(
+    @SerialName("_content") val content: String
+)

@@ -1,18 +1,21 @@
 package dev.engel.flickrpickr.feature.photos
 
-import dagger.Reusable
+import dagger.hilt.android.scopes.ViewModelScoped
 import dev.engel.flickrpickr.core.coroutines.IODispatcher
 import dev.engel.flickrpickr.core.data.network.FlickrApi
+import dev.engel.flickrpickr.core.data.network.FlickrPhoto
 import dev.engel.flickrpickr.core.data.network.FlickrPhotosResponse
 import dev.engel.flickrpickr.core.data.network.retryWithExponentialBackoff
+import dev.engel.flickrpickr.feature.photos.detail.PhotoDetailCache
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
-@Reusable
+@ViewModelScoped
 class PhotosRepository @Inject constructor(
     private val flickrApi: FlickrApi,
+    private val photoDetailCache: PhotoDetailCache,
     @param:IODispatcher private val networkDispatcher: CoroutineDispatcher
 ) {
 
@@ -42,7 +45,8 @@ class PhotosRepository @Inject constructor(
                 id = photo.id,
                 imageUrl = "https://live.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg",
                 title = photo.title,
-            )
+                photoResponse = photo,
+            ).also { photoDetailCache.add(it) }
         }
     }
 
@@ -92,4 +96,5 @@ data class Photo(
     val id: String,
     val imageUrl: String,
     val title: String,
+    val photoResponse: FlickrPhoto
 )

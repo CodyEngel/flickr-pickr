@@ -26,7 +26,7 @@ fun FlickrApp() {
             NavHost(
                 navController = navController,
                 startDestination = Photos,
-                popExitTransition = { scaleOut(targetScale = 0.9f) },
+                popExitTransition = { slideOutHorizontally() },
                 popEnterTransition = { EnterTransition.None },
             ) {
                 composable<Photos> { backStackEntry ->
@@ -44,7 +44,10 @@ fun FlickrApp() {
                     }
                 }
 
-                composable<PhotoDetail> { backStackEntry ->
+                composable<PhotoDetail>(
+                    enterTransition = { slideInHorizontally() },
+                    exitTransition = { ExitTransition.None }
+                ) { backStackEntry ->
                     val photoDetail = backStackEntry.toRoute<PhotoDetail>()
 
                     CompositionLocalProvider(
