@@ -12,9 +12,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.SubcomposeAsyncImage
+import dev.engel.flickrpickr.R
 import dev.engel.flickrpickr.core.ui.component.SkeletonBox
 import kotlinx.serialization.Serializable
 
@@ -40,7 +42,7 @@ fun PhotoDetailScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    val title = uiState?.photo?.title ?: "Loading..."
+                    val title = uiState?.photo?.title ?: stringResource(R.string.screen_photo_details_title)
                     Text(text = title)
                 },
                 navigationIcon = {
@@ -49,7 +51,7 @@ fun PhotoDetailScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Close,
-                            contentDescription = "Close",
+                            contentDescription = stringResource(R.string.screen_photo_details_close_description),
                         )
                     }
                 }
@@ -82,13 +84,13 @@ fun PhotoDetailScreen(
                 // Author
                 info?.owner?.let { owner ->
                     val formattedName = owner.realName.ifBlank { owner.username }
-                    Text(text = "Credit: $formattedName")
+                    Text(text = stringResource(R.string.screen_photo_detail_credit_label, formattedName))
                 }
 
                 // Tags
                 info?.tags?.tag?.let { tags ->
                     if (!tags.isEmpty()) {
-                        Text(text = "Tags")
+                        Text(text = stringResource(R.string.screen_photo_details_tags_label))
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
