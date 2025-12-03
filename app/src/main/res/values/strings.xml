@@ -2,4 +2,9 @@
     <string name="app_name">Flickr Pickr</string>
 
     <string name="screen_photos_title">Photos</string>
+    <string name="screen_photos_loading">Retrieving recent photos...</string>
+    <string name="screen_photos_error">Whoops, something went wrong...</string>
+    <string name="screen_photos_search_placeholder">Search</string>
+    <string name="screen_photos_search_icon_description">Search</string>
+    <string name="search_photos_close_icon_description">Close</string>
 </resources>

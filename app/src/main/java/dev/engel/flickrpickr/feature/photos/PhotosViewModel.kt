@@ -24,8 +24,8 @@ class PhotosViewModel @Inject constructor(
     private var nextRequest: PhotosRequest? = null
     private val loadingMutex = Mutex()
 
-    fun loadRecent() {
-        if (photos.isNotEmpty()) return
+    fun loadRecent(forceRefresh: Boolean = false) {
+        if (!forceRefresh && photos.isNotEmpty()) return
 
         _uiState.update { PhotoUiState.Loading }
         nextRequest = null

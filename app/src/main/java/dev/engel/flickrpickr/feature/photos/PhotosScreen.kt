@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
@@ -14,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -36,7 +38,7 @@ object Photos
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun PhotosScreen(
-    photos: Photos,
+    photos: Photos, // unused, passing route through to keep with navigation standards in project.
     onNavigateToPhotoDetail: (Photo) -> Unit,
     viewModel: PhotosViewModel = hiltViewModel(),
 ) {
@@ -57,7 +59,6 @@ fun PhotosScreen(
 
     LaunchedEffect(viewModel) { viewModel.loadRecent() }
 
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -68,14 +69,42 @@ fun PhotosScreen(
         contentWindowInsets = WindowInsets.safeContent,
     ) { innerPadding ->
         // Content
-        Column(
+        Box(
             modifier = Modifier
+                .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
                 .semantics { isTraversalGroup = true },
         ) {
             when (val typedState = uiState) {
-                is PhotoUiState.Loading -> Text(text = "Loading...")
-                is PhotoUiState.Error -> Text(text = typedState.message)
+                is PhotoUiState.Loading -> {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.Center)
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally)
+                        )
+                        Text(
+                            text = stringResource(R.string.screen_photos_loading),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    }
+                }
+                is PhotoUiState.Error -> {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        Text(text = stringResource(R.string.screen_photos_error), style = MaterialTheme.typography.titleMedium)
+                        Text(text = typedState.message)
+                    }
+                }
                 is PhotoUiState.Ready -> {
                     PhotosReady(
                         uiState = typedState,
@@ -89,50 +118,70 @@ fun PhotosScreen(
 
         // Search Overlay
         if (searchVisible) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .safeContentPadding()
-            ) {
-                DockedSearchBar(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .background(Color.Transparent)
-                        .semantics { traversalIndex = 0f },
-                    inputField = {
-                        SearchBarDefaults.InputField(
-                            trailingIcon = {
-                                IconButton(onClick = {
-                                    searchTextFieldState.clearText()
-                                    focusManager.clearFocus(force = true)
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Close,
-                                        contentDescription = "Close",
-                                    )
-                                }
-                            },
-                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
-                            query = searchTextFieldState.text.toString(),
-                            onQueryChange = { query ->
-                                searchTextFieldState.edit { replace(0, length, query) }
-                            },
-                            onSearch = { query ->
-                                viewModel.search(query)
-                                focusManager.clearFocus(force = true)
-                            },
-                            expanded = false,
-                            onExpandedChange = {},
-                            placeholder = { Text("Search") },
+            SearchOverlay(
+                searchTextFieldState = searchTextFieldState,
+                focusManager = focusManager,
+                viewModel = viewModel,
+            )
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+fun SearchOverlay(
+    searchTextFieldState: TextFieldState,
+    focusManager: FocusManager,
+    viewModel: PhotosViewModel,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .safeContentPadding()
+    ) {
+        DockedSearchBar(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .background(Color.Transparent)
+                .semantics { traversalIndex = 0f },
+            inputField = {
+                SearchBarDefaults.InputField(
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            searchTextFieldState.clearText()
+                            focusManager.clearFocus(force = true)
+                            viewModel.loadRecent(forceRefresh = true)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = stringResource(R.string.search_photos_close_icon_description),
+                            )
+                        }
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Filled.Search,
+                            contentDescription = stringResource(R.string.screen_photos_search_icon_description)
                         )
+                    },
+                    query = searchTextFieldState.text.toString(),
+                    onQueryChange = { query ->
+                        searchTextFieldState.edit { replace(0, length, query) }
+                    },
+                    onSearch = { query ->
+                        viewModel.search(query)
+                        focusManager.clearFocus(force = true)
                     },
                     expanded = false,
                     onExpandedChange = {},
-                    shadowElevation = 16.dp,
-                    content = {}
+                    placeholder = { Text(stringResource(R.string.screen_photos_search_placeholder)) },
                 )
-            }
-        }
+            },
+            expanded = false,
+            onExpandedChange = {},
+            shadowElevation = 16.dp,
+            content = {}
+        )
     }
 }
 
