@@ -3,6 +3,8 @@ package dev.engel.flickrpickr.feature.photos.detail
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
@@ -33,6 +35,7 @@ fun PhotoDetailScreen(
     viewModel: PhotoDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(viewModel) {
         viewModel.loadPhoto(photoDetail.photoId)
@@ -62,6 +65,7 @@ fun PhotoDetailScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
+                .verticalScroll(scrollState)
         ) {
             val typedState = uiState ?: return@Column
             val photo = typedState.photo
@@ -90,7 +94,10 @@ fun PhotoDetailScreen(
                 // Tags
                 info?.tags?.tag?.let { tags ->
                     if (!tags.isEmpty()) {
-                        Text(text = stringResource(R.string.screen_photo_details_tags_label))
+                        Text(
+                            text = stringResource(R.string.screen_photo_details_tags_label),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
@@ -100,6 +107,23 @@ fun PhotoDetailScreen(
                                     onClick = {},
                                 )
                             }
+                        }
+                    }
+                }
+
+                exif?.let { exifData ->
+                    if (exifData.camera.isNotBlank() || exifData.exif.isNotEmpty()) {
+                        Text(
+                            text = stringResource(R.string.screen_photo_details_exif_header),
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        val formattedCamera = exifData.camera.ifBlank {
+                            stringResource(R.string.screen_photo_details_exif_empty_camera)
+                        }
+                        Text(text = stringResource(R.string.screen_photo_details_exif_camera_label, formattedCamera))
+
+                        exifData.exif.forEach { exifField ->
+                            Text("${exifField.label}: ${exifField.clean ?: exifField.raw.content}")
                         }
                     }
                 }

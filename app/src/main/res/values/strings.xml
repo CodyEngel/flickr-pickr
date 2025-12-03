@@ -14,4 +14,7 @@
     <string name="screen_photo_details_close_description">Close</string>
     <string name="screen_photo_detail_credit_label">Credit: %s</string>
     <string name="screen_photo_details_tags_label">Tags</string>
+    <string name="screen_photo_details_exif_header">Photo Nerd Information</string>
+    <string name="screen_photo_details_exif_camera_label">Camera: %s</string>
+    <string name="screen_photo_details_exif_empty_camera">Unknown</string>
 </resources>
