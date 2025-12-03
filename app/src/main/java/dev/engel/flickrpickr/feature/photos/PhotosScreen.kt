@@ -1,16 +1,9 @@
 package dev.engel.flickrpickr.feature.photos
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
@@ -21,9 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -35,7 +25,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import dev.engel.flickrpickr.R
 import dev.engel.flickrpickr.core.ui.component.SkeletonBox
@@ -48,6 +37,7 @@ object Photos
 @OptIn(ExperimentalMaterial3Api::class)
 fun PhotosScreen(
     photos: Photos,
+    onNavigateToPhotoDetail: (Photo) -> Unit,
     viewModel: PhotosViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -90,7 +80,8 @@ fun PhotosScreen(
                     PhotosReady(
                         uiState = typedState,
                         lazyGridState = lazyGridState,
-                        scrollConnection = appBarScrollBehavior.nestedScrollConnection
+                        scrollConnection = appBarScrollBehavior.nestedScrollConnection,
+                        onNavigateToPhotoDetail = onNavigateToPhotoDetail,
                     )
                 }
             }
@@ -111,14 +102,15 @@ fun PhotosScreen(
                     inputField = {
                         SearchBarDefaults.InputField(
                             trailingIcon = {
-                                Icon(
-                                    imageVector = Icons.Filled.Close,
-                                    contentDescription = "Close",
-                                    modifier = Modifier.clickable() {
-                                        searchTextFieldState.clearText()
-                                        focusManager.clearFocus(force = true)
-                                    }
-                                )
+                                IconButton(onClick = {
+                                    searchTextFieldState.clearText()
+                                    focusManager.clearFocus(force = true)
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Close,
+                                        contentDescription = "Close",
+                                    )
+                                }
                             },
                             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
                             query = searchTextFieldState.text.toString(),
@@ -145,7 +137,12 @@ fun PhotosScreen(
 }
 
 @Composable
-fun PhotosReady(uiState: PhotoUiState.Ready, lazyGridState: LazyGridState, scrollConnection: NestedScrollConnection) {
+fun PhotosReady(
+    uiState: PhotoUiState.Ready,
+    lazyGridState: LazyGridState,
+    scrollConnection: NestedScrollConnection,
+    onNavigateToPhotoDetail: (Photo) -> Unit,
+) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
         state = lazyGridState,
@@ -160,6 +157,7 @@ fun PhotosReady(uiState: PhotoUiState.Ready, lazyGridState: LazyGridState, scrol
             Box(
                 modifier = Modifier
                     .aspectRatio(1f)
+                    .clickable { onNavigateToPhotoDetail(photo) }
             ) {
                 SubcomposeAsyncImage(
                     model = photo.imageUrl,

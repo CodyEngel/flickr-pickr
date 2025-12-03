@@ -7,6 +7,7 @@ import dev.engel.flickrpickr.core.data.network.FlickrPhotosResponse
 import dev.engel.flickrpickr.core.data.network.retryWithExponentialBackoff
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
 @Reusable
@@ -86,6 +87,7 @@ data class PhotosResponse(
     val nextRequest: PhotosRequest?,
 )
 
+@Serializable
 data class Photo(
     val id: String,
     val imageUrl: String,

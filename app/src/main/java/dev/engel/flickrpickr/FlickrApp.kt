@@ -12,6 +12,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import dev.engel.flickrpickr.feature.photos.Photos
 import dev.engel.flickrpickr.feature.photos.PhotosScreen
+import dev.engel.flickrpickr.feature.photos.detail.PhotoDetail
+import dev.engel.flickrpickr.feature.photos.detail.PhotoDetailScreen
 
 @Composable
 fun FlickrApp() {
@@ -33,7 +35,25 @@ fun FlickrApp() {
                     CompositionLocalProvider(
                         LocalAnimatedVisibilityScope provides this,
                     ) {
-                        PhotosScreen(photos = photos)
+                        PhotosScreen(
+                            photos = photos,
+                            onNavigateToPhotoDetail = { photo ->
+                                navController.navigate(route = PhotoDetail(photoId = photo.id))
+                            }
+                        )
+                    }
+                }
+
+                composable<PhotoDetail> { backStackEntry ->
+                    val photoDetail = backStackEntry.toRoute<PhotoDetail>()
+
+                    CompositionLocalProvider(
+                        LocalAnimatedVisibilityScope provides this,
+                    ) {
+                        PhotoDetailScreen(
+                            photoDetail = photoDetail,
+                            onCloseDetails = { navController.popBackStack() }
+                        )
                     }
                 }
             }
