@@ -40,6 +40,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        //noinspection WrongGradleMethod
         env.forEach { (key, value) -> buildConfigField("String", key, "\"$value\"") }
     }
 
@@ -62,6 +63,11 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform()
+        }
     }
 }
 
@@ -111,7 +117,9 @@ dependencies {
     implementation(libs.coil.network.okhttp)
 
     // Testing
-    testImplementation(libs.junit)
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
     testImplementation(libs.strikt.core)
